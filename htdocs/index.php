@@ -56,17 +56,14 @@
 $_CONFIG = array
 (
 	'asn' => '12345',
-	'company' => 'My Company Name',
+	'company' => 'Nome da Empresa',
 	'logo' => 'lg_logo.gif',
-	'color' => '#E48559',
-    'sshauthtype' => 'password',
-    'sshprivatekeypath' => '',
-	'sshpwdcommand' => 'plink',
+	'color' => '#444',
+	'sshcommand' => 'sshpass',
 	'plink' => '/usr/local/bin/plink',
 	'sshpass' => '/usr/bin/sshpass',
-    'ssh' => '/usr/bin/ssh',
-	'ipwhois' => 'http://noc.hsdn.org/whois/',
-	'aswhois' => 'http://noc.hsdn.org/aswhois/',
+	'ipwhois' => 'https://stat.ripe.net/',
+	'aswhois' => 'https://stat.ripe.net/',
 	'routers' => array(),
 );
 
@@ -101,7 +98,7 @@ if ($command != 'graph' OR !isset($_REQUEST['render']) OR !isset($_CONFIG['route
 		<link rel="shortcut icon" href="favicon.ico">
 		<style type="text/css"> 
 		<!--
-			body { font: 14px normal Arial, Helvetica, sans-serif; margin: 30px 10%; color: #000; background: #fff; }
+			body { font: 14px normal Arial, Helvetica, sans-serif; margin: 30px 10%; color: #25fa00; background: #000000; }
 			h2 { font-size: 24px; font-weight: normal; }
 			form { margin: 0; padding: 0 0 15px 0; }
 			p, object { margin: 0; padding: 0 0 15px 0; }
@@ -109,8 +106,8 @@ if ($command != 'graph' OR !isset($_REQUEST['render']) OR !isset($_CONFIG['route
 			a:link, a:visited { color: <?php print $_CONFIG['color'] ?>; }
 			a:hover { color: #ccc; }
 			table { border: 0; }
-			table th { background: <?php print $_CONFIG['color'] ?>; color: #fff; white-space: nowrap; font-size: 14px; text-align: center; }
-			.form { margin: auto; text-align: left; background: #efefef; border: 5px solid #efefef; }
+			table th { background: <?php print $_CONFIG['color'] ?>; color: #25fa00; white-space: nowrap; font-size: 14px; text-align: center; }
+			.form { margin: auto; text-align: left; background: #515251; border: 5px solid #efefef; }
 			.center { text-align: center; }
 			.error { color: red; font-weight: bold; }
 			.warning { color: blue; font-weight: bold; }
@@ -191,7 +188,6 @@ $queries = array
 		'ipv4' => array
 		(
 			'bgp' => '/ip route print detail where bgp dst-address=%s',
-            'bgp-within' => '/ip route print detail where bgp dst-address in %s',
 			'advertised-routes' => '/routing bgp advertisements print peer=%s',
 			'routes' => '/ip route print where gateway=%s',
 			'summary' => '/routing bgp peer print status where address-families=ip',
@@ -201,7 +197,6 @@ $queries = array
 		'ipv6' => array
 		(
 			'bgp' => '/ipv6 route print detail where bgp dst-address=%s',
-            'bgp-within' => '/ip route print detail where bgp dst-address in %s',
 			'advertised-routes' => '/routing bgp advertisements print peer=%s',
 			'routes' => '/ipv6 route print where gateway=%s',
 			'summary' => '/routing bgp peer print status where address-families=ipv6',
@@ -323,7 +318,7 @@ if (isset($_CONFIG['routers'][$router]) AND
 			}
 		}
 
-		if ($query AND ($command == 'bgp' OR $command == 'bgp-within' OR $command == 'graph') AND ($os == 'mikrotik' OR ($protocol == 'ipv6' AND $os == 'ios')))
+		if ($query AND ($command == 'bgp' OR $command == 'graph') AND ($os == 'mikrotik' OR ($protocol == 'ipv6' AND $os == 'ios')))
 		{
 			if (strpos($query, '/') === FALSE AND $radb = get_radb($query))
 			{
@@ -342,7 +337,7 @@ if (isset($_CONFIG['routers'][$router]) AND
 				{
 					if ($command != 'graph')
 					{
-						print '<p>Address <b>'.$query.'</b> is converted to a subnet <b>'.$route.'</b> using the <a href="http://radb.net/" target="_blank">Merit RADb</a></p>';
+						print '<p>Endereço <b>'.$query.'</b> convertido em uma sub-rede <b>'.$route.'</b> usando dados de <a href="http://radb.net/" target="_blank">Merit RADb</a></p>';
 					}
 
 					$query = $route;
@@ -457,12 +452,11 @@ if (isset($_CONFIG['routers'][$router]) AND
 					{
 						$as_best_path = $as_bgp_path['best'];
 						$as_pathes = $as_bgp_path['pathes'];
-
 						if (sizeof($as_pathes) < 1)
 						{
+							
 							get_blank_graph('Not found BGP information of request.', $format);
 						}
-
 						get_path_graph($router, $query, $as_pathes, $as_best_path, $format);
 					}
 
@@ -470,10 +464,10 @@ if (isset($_CONFIG['routers'][$router]) AND
 				}
 ?>
 		<div class="center">
-			<p>BGP routing graph for <b><?php print $query ?></b>, router: <b><?php print $_CONFIG['routers'][$router]['description'] ?></b></p>
-			<p><a href="?command=bgp&amp;protocol=<?php print $protocol ?>&amp;query=<?php print $query ?>&amp;router=<?php print $router ?>">Run a bgp command on this router</a></p>
+			<p>Gráfico de roteamento BGP para <b><?php print $query ?></b>, router: <b><?php print $_CONFIG['routers'][$router]['description'] ?></b></p>
+			<p><a href="?command=bgp&amp;protocol=<?php print $protocol ?>&amp;query=<?php print $query ?>&amp;router=<?php print $router ?>">Execute o comando bgp neste roteador</a></p>
 			<table border="0" class="legend">
-				<tr><td bgcolor="#CCCCFF" width="15">&nbsp;</td><td>Upstream AS</td><td width="80">&nbsp;</td><td bgcolor="#CCFFCC" width="15">&nbsp;</td><td>Peering AS</td><td width="80">&nbsp;</td><td bgcolor="white"><div style="height:12px;width:37px;background-image:url('data:image/gif;base64,R0lGODlhJQAMAOcAAAQCBISChJQ2NMTCxERCRcSCTGRiZYRWNEw2HKSipOTi5CQiJWRCJORCROyiXPzClISGnFRSVXRydKyi5DQyNRQSFJSSqdwCBPTy99xqlNTS1PwiJNSGvMSm7FxGRGxijIR+fPzk5JySzPSKVLS0tCQlNFxSdCQXDERCXOTC3LS21Dw6PSwCBNQeHAwKDPxSLHxyo+x2hNTS9MTG5KRyROzs7JSGwRwaHeyitPzU1KSivGxsbGRagVxaXXx8fLSq8ZycnPw0NOSaXLyCTExKTrxqbHwiJPylpDQzRPz+/GxuhCwqN4yOjJRkPEQ+WeTk/CwsLPRCTKSa3PwUFBQOCtza/Py0tNSPVGxKLIyKn1RVZBQWHPwDBPz09PxkZPybnIR3rFxcbExKZPzExDw6VPx8fNzO/KyqxJyatPQeLBQCBMzMzERGVGRldFw+JDQiFHRyhNzb3PQqPPTu/PyEhLy8vLyy/AwNFPxVVMzK6pSOxBweLOza7Lyq9HxunDQuQfxMTLwmJPzavPyUlMyb3JxaXLx+TFRKbCQeLOxufKysrPSuvORKZMSy/OTO7Hx+lPwKDIyCt/x0dPzc3Pw8PPysrPy8vPxsbPzNzPyMjPxaXIyKjMyOzHRqlcyKVCweFLy+3JSWlNyWW4R+tJxqPMTC3LSyzFw6PPwaHPwsLPzs7AwGBFQ5JGxGLPSiYLSi5hwSDKSV1ExCXLy61tzW/Dw1TJSSlOzi9PxERKya3BwWJMQqLISClNTW5CwmNKx2ROzs/PSmtGxsfHx7jJyarOyeXJxmPHRNLFxafExKbJyOzIx+fPR2hIx+tAQGBERGRWRmZOTm5CQmJWRGLPzGnFRWVDQ2NZSWrPT298Sq9GxmjlxWeTw+PQwODNTW9pSKxBweHaSmvWRehFxeXExOTCwuNNze/IyOpExOXDw+TKyuypyetXR2iMzO7Lyu+FROcPwODHRunPweHfSmZLSm7ExGZOzm/Kye44SGhMTGxIRaNKSmpHR2dBQWFNTW1PwmJCwAAAAAJQAMAAAIagCTCBxIsKBBVQYTKlxo8AsXL5YYSpzokAuXKZIwTdxYsKJFi/LK5OC40ePHj6kyhRh4pKXLlzBjXjpJ82OQRElq6tw5ZWfNKCQb+rQYZFDQhCZPpqIz6ajCpCFHOl1YccqlMVMnHoG4MSAAOw==')"></div></td><td>Best route</td></tr>
+				<tr><td bgcolor="#CCCCFF" width="15">&nbsp;</td><td>Upstream AS</td><td width="80">&nbsp;</td><td bgcolor="#CCFFCC" width="15">&nbsp;</td><td>Peering AS</td><td width="80">&nbsp;</td><td bgcolor="white"><div style="height:12px;width:37px;background-image:url('data:image/gif;base64,R0lGODlhJQAMAOcAAAQCBISChJQ2NMTCxERCRcSCTGRiZYRWNEw2HKSipOTi5CQiJWRCJORCROyiXPzClISGnFRSVXRydKyi5DQyNRQSFJSSqdwCBPTy99xqlNTS1PwiJNSGvMSm7FxGRGxijIR+fPzk5JySzPSKVLS0tCQlNFxSdCQXDERCXOTC3LS21Dw6PSwCBNQeHAwKDPxSLHxyo+x2hNTS9MTG5KRyROzs7JSGwRwaHeyitPzU1KSivGxsbGRagVxaXXx8fLSq8ZycnPw0NOSaXLyCTExKTrxqbHwiJPylpDQzRPz+/GxuhCwqN4yOjJRkPEQ+WeTk/CwsLPRCTKSa3PwUFBQOCtza/Py0tNSPVGxKLIyKn1RVZBQWHPwDBPz09PxkZPybnIR3rFxcbExKZPzExDw6VPx8fNzO/KyqxJyatPQeLBQCBMzMzERGVGRldFw+JDQiFHRyhNzb3PQqPPTu/PyEhLy8vLyy/AwNFPxVVMzK6pSOxBweLOza7Lyq9HxunDQuQfxMTLwmJPzavPyUlMyb3JxaXLx+TFRKbCQeLOxufKysrPSuvORKZMSy/OTO7Hx+lPwKDIyCt/x0dPzc3Pw8PPysrPy8vPxsbPzNzPyMjPxaXIyKjMyOzHRqlcyKVCweFLy+3JSWlNyWW4R+tJxqPMTC3LSyzFw6PPwaHPwsLPzs7AwGBFQ5JGxGLPSiYLSi5hwSDKSV1ExCXLy61tzW/Dw1TJSSlOzi9PxERKya3BwWJMQqLISClNTW5CwmNKx2ROzs/PSmtGxsfHx7jJyarOyeXJxmPHRNLFxafExKbJyOzIx+fPR2hIx+tAQGBERGRWRmZOTm5CQmJWRGLPzGnFRWVDQ2NZSWrPT298Sq9GxmjlxWeTw+PQwODNTW9pSKxBweHaSmvWRehFxeXExOTCwuNNze/IyOpExOXDw+TKyuypyetXR2iMzO7Lyu+FROcPwODHRunPweHfSmZLSm7ExGZOzm/Kye44SGhMTGxIRaNKSmpHR2dBQWFNTW1PwmJCwAAAAAJQAMAAAIagCTCBxIsKBBVQYTKlxo8AsXL5YYSpzokAuXKZIwTdxYsKJFi/LK5OC40ePHj6kyhRh4pKXLlzBjXjpJ82OQRElq6tw5ZWfNKCQb+rQYZFDQhCZPpqIz6ajCpCFHOl1YccqlMVMnHoG4MSAAOw==')"></div></td><td>Melhor rota</td></tr>
 			</table>
 			<br>
 			<div id="loading" style="display:inline"><p><b>Please wait...</b></p></div>
@@ -510,13 +504,12 @@ else
 		<form method="get" action="">
 		<div class="center">
 			<table class="form" cellpadding="2" cellspacing="2">
-				<tr><th>Type of Query</th><th>Additional parameters</th><th>Node</th></tr>
+				<tr><th>Tipo de consulta</th><th>Parâmetros adicionais</th><th>Router</th></tr>
 				<tr><td>
 				<table border="0" cellpadding="2" cellspacing="2">
-					<tr><td><input type="radio" name="command" id="bgp" value="bgp" checked="checked"></td><td><label for="bgp">bgp equal</label></td></tr>
-                    <tr><td><input type="radio" name="command" id="bgp-within" value="bgp-within" checked="checked"></td><td><label for="bgp-within">bgp within</label></td></tr>
-					<tr><td><input type="radio" name="command" id="advertised-routes" value="advertised-routes"></td><td><label for="advertised-routes">bgp&nbsp;advertised-routes</label></td></tr>
-					<tr><td><input type="radio" name="command" id="summary" value="summary"></td><td><label for="summary">bgp&nbsp;summary</label></td></tr>
+					<tr><td><input type="radio" name="command" id="bgp" value="bgp" checked="checked"></td><td><label for="bgp">bgp</label></td></tr>
+      				<!--	<tr><td><input type="radio" name="command" id="advertised-routes" value="advertised-routes"></td><td><label for="advertised-routes">bgp&nbsp;advertised-routes</label></td></tr> -->
+				<!--	<tr><td><input type="radio" name="command" id="summary" value="summary"></td><td><label for="summary">bgp&nbsp;summary</label></td></tr> -->
 					<tr><td><input type="radio" name="command" id="graph" value="graph"></td><td><label for="graph">bgp graph</label></td></tr>
 					<tr><td><input type="radio" name="command" id="trace" value="trace"></td><td><label for="trace">traceroute</label></td></tr>
 					<tr><td><input type="radio" name="command" id="ping" value="ping"></td><td><label for="ping">ping</label></td></tr>
@@ -541,7 +534,7 @@ else
 <?php endif ?>
 <?php endforeach ?>
 				</select></td></tr>
-				<tr><td align="center" colspan="3"><p><input type="submit" value="Submit"> | <input type="reset" value="Reset"></p></td></tr>
+				<tr><td align="center" colspan="3"><p><input type="submit" value="Enviar"> | <input type="reset" value="Limpar"></p></td></tr>
 			</table>
 		</div>
 		</form>
@@ -552,8 +545,8 @@ else
 ?>
 		<hr>
 		<div class="center">
-			<p><small>Information: <a href="https://stat.ripe.net/AS<?php print $_CONFIG['asn'] ?>" target="_blank">RIPEstat</a> <a href="http://bgp.he.net/AS<?php print $_CONFIG['asn'] ?>" target="_blank">he.net</a> <a href="https://www.robtex.com/as/AS<?php print $_CONFIG['asn'] ?>.html" target="_blank">robtex.com</a> <a href="http://www.peeringdb.com/view.php?asn=<?php print $_CONFIG['asn'] ?>" target="_blank">PeeringDB</a></small></p>
-			<p>Copyright &copy; <?php print date('Y') ?> <?php print htmlspecialchars($_CONFIG['company']) ?></p>
+			<p><small>Mais informações: <a href="https://stat.ripe.net/AS<?php print $_CONFIG['asn'] ?>" target="_blank">RIPEstat</a> <a href="http://bgp.he.net/AS<?php print $_CONFIG['asn'] ?>" target="_blank">he.net</a> <a href="https://www.robtex.com/as/AS<?php print $_CONFIG['asn'] ?>.html" target="_blank">robtex.com</a> <a href="http://www.peeringdb.com/view.php?asn=<?php print $_CONFIG['asn'] ?>" target="_blank">PeeringDB</a> <a href="https://rdap.registro.br/autnum/<?php print $_CONFIG['asn'] ?>" target="_blank">RDAP registro.br</a></small></p>
+			<p>Copyright &copy; <?php print date('Y') ?>  <a href="https://provsolutions.com.br"> ProvSolutions </a></p>
 		</div>
 	</body>
 </html>
@@ -568,7 +561,6 @@ function process($url, $exec, $return_buffer = FALSE)
 {
 	global $_CONFIG, $router, $protocol, $os, $command, $query, $ros;
 
-    $sshauthtype = null;
 	$buffer = '';
 	$lines = $line = $is_exception = FALSE;
 	$index = 0;
@@ -577,88 +569,54 @@ function process($url, $exec, $return_buffer = FALSE)
 	switch ($url['scheme'])
 	{
 		case 'ssh':
-            if(! empty($_CONFIG['routers'][$router]['sshauthtype']))
-            {
-                $sshauthtype = $_CONFIG['routers'][$router]['sshauthtype'];
-            }
-            elseif (! empty($_CONFIG['sshauthtype']))
-            {
-                $sshauthtype = $_CONFIG['sshauthtype'];
-            }
-            switch ($sshauthtype)
-            {
-                case 'password':
-                    switch ($_CONFIG['sshpwdcommand'])
-                    {
-                        // Use sshpass command
-                        case 'sshpass':
-                            $ssh_path = $_CONFIG['sshpass'];
-                            $params = array();
+			switch ($_CONFIG['sshcommand'])
+			{
+				// Use sshpass command
+				case 'sshpass':
+					$ssh_path = $_CONFIG['sshpass'];
+					$params = array();
 
-                            if (isset($url['pass']) AND $url['pass'] != '')
-                            {
-                                $params[] = '-p '.$url['pass'];
-                            }
+					if (isset($url['pass']) AND $url['pass'] != '')
+					{
+						$params[] = '-p '.$url['pass'];
+					}
 
-                            $params[] = 'ssh';
+					$params[] = 'ssh';
 
-                            if (isset($url['user']) AND $url['user'] != '')
-                            {
-                                $params[] = '-l '.$url['user'];
-                            }
+					if (isset($url['user']) AND $url['user'] != '')
+					{
+						$params[] = '-l '.$url['user'];
+					}
 
-                            if (isset($url['port']) AND $url['port'] != '')
-                            {
-                                $params[] = '-p '.$url['port'];
-                            }
+					if (isset($url['port']) AND $url['port'] != '')
+					{
+						$params[] = '-p '.$url['port'];
+					}
 
-                            $params[] = '-o StrictHostKeyChecking=no';
-                            break;
+					$params[] = '-o StrictHostKeyChecking=no';
+					break;
 
-                        // Use plink command
-                        case 'plink':
-                        default:
-                            $ssh_path = $_CONFIG['plink'];
-                            $params = array('-ssh');
-                            if (isset($url['user']) AND $url['user'] != '')
-                            {
-                                $params[] = '-l '.$url['user'];
-                            }
+				// Use plink command
+				case 'plink':
+				default:
+					$ssh_path = $_CONFIG['plink'];
+					$params = array('-ssh');
 
-                            if (isset($url['pass']) AND $url['pass'] != '')
-                            {
-                                $params[] = '-pw '.$url['pass'];
-                            }
+					if (isset($url['user']) AND $url['user'] != '')
+					{
+						$params[] = '-l '.$url['user'];
+					}
 
-                            if (isset($url['port']) AND $url['port'] != '')
-                            {
-                                $params[] = '-P '.$url['port'];
-                            }
-                    }
-                    break;
-                case 'privatekey':
-                    $ssh_path = $_CONFIG['ssh'];
-                    if(isset($_CONFIG['routers'][$router]['sshprivatekeypath']) AND ! empty($_CONFIG['routers'][$router]['sshprivatekeypath']))
-                    {
-                        $params[] = '-i '. $_CONFIG['routers'][$router]['sshprivatekeypath'];
-                    }
-                    elseif (isset($_CONFIG['sshprivatekeypath']) AND ! empty($_CONFIG['sshprivatekeypath']))
-                    {
-                        $params[] = '-i '. $_CONFIG['sshprivatekeypath'];
-                    }
-                    if (isset($url['user']) AND $url['user'] != '')
-                    {
-                        $params[] = '-l '.$url['user'];
-                    }
+					if (isset($url['pass']) AND $url['pass'] != '')
+					{
+						$params[] = '-pw '.$url['pass'];
+					}
 
-                    if (isset($url['port']) AND $url['port'] != '')
-                    {
-                        $params[] = '-p '.$url['port'];
-                    }
-
-                    $params[] = '-o StrictHostKeyChecking=no';
-                    break;
-            }
+					if (isset($url['port']) AND $url['port'] != '')
+					{
+						$params[] = '-P '.$url['port'];
+					}
+			}
 
 			$params[] = $url['host'];
 
@@ -729,7 +687,6 @@ function process($url, $exec, $return_buffer = FALSE)
 					}
 
 					print $line;
-
 					flush();
 
 					if ($line === NULL)
@@ -741,7 +698,7 @@ function process($url, $exec, $return_buffer = FALSE)
 				pclose($fp);
 			}
 
-			if (empty($lines) AND !$line)
+			if (!$line)
 			{
 				print '<p class="error">Command failed.</p>';
 			}
@@ -900,7 +857,7 @@ function process($url, $exec, $return_buffer = FALSE)
 				}
 				while ($c != $telnet->NULL OR $c != $telnet->DC1);
 
-				if (empty($lines) AND !$line)
+				if (!$line)
 				{
 					print '<p class="error">Command failed.</p>';
 				}
@@ -2112,6 +2069,26 @@ function parse_bgp_path($output)
 		);
 	}
 
+	// Huawei Edited by Denis
+	if (preg_match("/^display bgp routing-table/i", $exec) AND $os == 'huawei')
+	{
+		$lines = explode("\n", $output);
+		foreach ($lines as $line)
+		{
+			if (preg_match("/AS-path/i", $line))
+			{
+				$path = get_string_between($line, 'AS-path', ',');
+				$pathes[] = parse_as_path($path);
+			}
+		}
+		$best = 0;
+		return array
+		(
+			'best' => $best,
+			'pathes' => $pathes
+		);
+	}
+
 	// JunOS
 	if (preg_match("/^show route protocol bgp .* terse/i", $exec)) 
 	{
@@ -2224,7 +2201,6 @@ function parse_bgp_path($output)
 				}
 			}
 		}
-
 		return array
 		(
 			'best' => $best,
@@ -2306,8 +2282,8 @@ function build_table($table_array)
 		$line = array();
 
 		foreach ($data as $field => $value)
-		{
-			if (reset(array_keys($data)) == $field)
+		{	$array_keys_data = array_keys($data);
+			if (reset($array_keys_data) == $field)
 			{
 				$line[] = $value.str_repeat(' ', $max[$field] - mb_strlen(strip_tags($value)));
 			}
@@ -2829,6 +2805,18 @@ function group_routers($array)
 	return $return;
 }
 
+/**
+ * Function to get AS values for huawei
+ */
+function get_string_between($string, $start, $end){
+    $string = ' ' . $string;
+    $ini = strpos($string, $start);
+    if ($ini == 0) return '';
+    $ini += strlen($start);
+    $len = strpos($string, $end, $ini) - $ini;
+    return substr($string, $ini, $len);
+}
+
 // ------------------------------------------------------------------------
 
 /**
@@ -3241,3 +3229,4 @@ class Telnet
 } // class Telnet
 
 /* End of file */
+
